@@ -57,7 +57,7 @@ async def main():
     global frame_count
     cap = cv2.VideoCapture(1)
     motion_detector = cv2.createBackgroundSubtractorMOG2()
-    threshold_area = 1000
+    threshold_area = 3000
 
     recording = False
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -86,7 +86,7 @@ async def main():
 
                 out.write(frame)
 
-                if current_time - last_photo_time >= 30:
+                if current_time - last_photo_time >= 20:
                     last_photo_time = current_time
                     cv2.imwrite('motion_photo.jpg', result_frame)
                     await send_motion_photo()
