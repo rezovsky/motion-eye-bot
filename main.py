@@ -55,7 +55,7 @@ async def send_motion_video():
 
 async def main():
     global frame_count
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     motion_detector = cv2.createBackgroundSubtractorMOG2()
     threshold_area = 1000
 
