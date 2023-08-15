@@ -12,7 +12,7 @@ def colored_check(text, color):
     supports_color = sys.stdout.isatty()
     print(supports_color)
     if supports_color:
-        return colored(text, color)
+        return colored(f' {text.upper()} ', color)
     else:
         return f' {text.upper()} '
 
