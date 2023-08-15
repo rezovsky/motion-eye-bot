@@ -1,23 +1,19 @@
-
-# Замените на ваш токен бота
-TOKEN = '6350121672:AAEsGxrOAtBpci8MXpp9nRpZUnVQjQCQyCg'
-
-# Замените на ваш чат ID (можно узнать у бота @userinfobot в Телеграме)
-CHAT_ID = '888797603'
-
+import time
+import aiohttp
 import cv2
 import asyncio
 from aiogram import Bot, types
-from aiogram.utils import executor
-import time
-from moviepy.editor import VideoFileClip
+import configparser
 
+# Чтение настроек из конфигурационного файла
+config = configparser.ConfigParser()
+config.read('config.ini')
 
+TOKEN = config['BotSettings']['TOKEN']
+CHAT_ID = config['BotSettings']['CHAT_ID']
 
 bot = Bot(token=TOKEN)
-loop = asyncio.get_event_loop()
 
-frame_count = 0
 
 def motion_detection(frame, motion_detector, threshold_area):
     global frame_count
@@ -27,90 +23,97 @@ def motion_detection(frame, motion_detector, threshold_area):
     motion_detected = False
     for contour in contours:
         area = cv2.contourArea(contour)
+
         if area > threshold_area:
+            print(area)
             x, y, w, h = cv2.boundingRect(contour)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Рисуем рамку вокруг объекта
             motion_detected = True
 
     return frame, motion_detected
 
-async def send_motion_photo():
-    with open('motion_photo.jpg', 'rb') as photo:
-        await bot.send_photo(chat_id=CHAT_ID, photo=types.InputFile(photo))
 
-async def send_motion_video():
-    from moviepy.editor import VideoFileClip
-    import os
+async def send_motion_photo(session):
+    print('send photo')
+    async with session:
+        with open('motion_photo.jpg', 'rb') as photo:
+            await bot.send_photo(chat_id=CHAT_ID, photo=types.InputFile(photo))
 
-    # Конвертировать AVI видео в MP4
-    clip = VideoFileClip('motion_detected.avi')
-    clip.write_videofile('motion_detected.mp4', codec='libx264', threads=4)
 
-    # Отправить видео в Телеграм
-    with open('motion_detected.mp4', 'rb') as video:
-        await bot.send_video(chat_id=CHAT_ID, video=types.InputFile(video))
+async def send_motion_video(session):
+    print('send video')
+    async with session:
+        with open('motion_detected.mp4', 'rb') as video:
+            await bot.send_video(chat_id=CHAT_ID, video=types.InputFile(video))
 
-    # Удалить AVI файл после конвертации
-    os.remove('motion_detected.avi')
+
 
 async def main():
-    global frame_count
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(int(config['MotionDetectionSettings']['camera_index']))
     motion_detector = cv2.createBackgroundSubtractorMOG2()
-    threshold_area = 3000
+    threshold_area = int(config['MotionDetectionSettings']['threshold_area'])
 
-    recording = False
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = None
+    # Создать сессию
+    async with aiohttp.ClientSession() as session:
 
-    last_photo_time = 0
-    last_send_time = 0
+        recording = False
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = None
+        detect_time = time.time()
+        not_detect_time = time.time()
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
+        second_first_photo = int(config['BotSettings']['second_first_photo'])
+        seconds_next_photo = int(config['BotSettings']['seconds_next_photo'])
+        seconds_to_send_videos = int(config['BotSettings']['seconds_to_send_videos'])
+        frame_rate = int(config['MotionDetectionSettings']['frame_rate'])
 
-        current_time = time.time()
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        result_frame, motion_detected = motion_detection(frame, motion_detector, threshold_area)
+            result_frame, motion_detected = motion_detection(frame, motion_detector, threshold_area)
 
-        if motion_detected:
-            frame_count += 1
-            if frame_count >= 5:  # Отправить кадр после пяти кадров
-                frame_count = 0
+            if motion_detected:
+                detect_time = time.time()
+                times = abs(not_detect_time - detect_time)
+                if second_first_photo < times < second_first_photo + 1:
+                    cv2.imwrite('motion_photo.jpg', result_frame)
+                    await send_motion_photo(session)
+
+                if times >= seconds_next_photo + second_first_photo + 1:
+                    cv2.imwrite('motion_photo.jpg', result_frame)
+                    not_detect_time = time.time() - second_first_photo - 1
+                    await send_motion_photo(session)
+
                 if not recording:
                     recording = True
-                    out = cv2.VideoWriter('motion_detected.avi', fourcc, 20.0, (640, 480))
-                    last_send_time = current_time
+                    out = cv2.VideoWriter('motion_detected.mp4', fourcc, frame_rate, (640, 480))
 
                 out.write(frame)
 
-                if current_time - last_photo_time >= 20:
-                    last_photo_time = current_time
-                    cv2.imwrite('motion_photo.jpg', result_frame)
-                    await send_motion_photo()
 
-        else:
-            frame_count = 0  # Сбрасываем счетчик кадров при прекращении движения
-            if recording:
-                recording = False
-                out.release()
+            else:
+                not_detect_time = time.time()
+                times = abs(not_detect_time - detect_time)
+                if times >= seconds_to_send_videos and recording:
+                    recording = False
+                    out.release()
+                    await send_motion_video(session)
 
-                if current_time - last_send_time >= 30:
-                    await send_motion_video()
-                    last_send_time = current_time
+            cv2.imshow('Motion Detection', result_frame)
 
-        cv2.imshow('Motion Detection', result_frame)
+            if cv2.waitKey(30) & 0xFF == 27:
+                break
 
-        if cv2.waitKey(30) & 0xFF == 27:
-            break
+        if out:
+            out.release()
 
-    if out:
-        out.release()
+        cap.release()
+        cv2.destroyAllWindows()
 
-    cap.release()
-    cv2.destroyAllWindows()
+        await session.close()
 
 if __name__ == "__main__":
-    loop.run_until_complete(main())
+    asyncio.run(main())
+
