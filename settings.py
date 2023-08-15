@@ -1,14 +1,13 @@
-import cv2
-import configparser
-from termcolor import colored
+import cv2  # Import OpenCV for image and video processing
+import configparser  # Import configparser for working with configuration files
+from termcolor import colored  # Import termcolor for colored console output
 from pygrabber.dshow_graph import FilterGraph
 
-# Чтение настроек из конфигурационного файла
+# Read configuration settings from the 'config.ini' file
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-
-# Вывод списка доступных камер
+# Function to get a list of connected cameras
 def get_connected_cameras():
     camera_list = {}
 
@@ -19,7 +18,7 @@ def get_connected_cameras():
 
     return camera_list
 
-# Проходимся по разделам и параметрам в config.ini
+# Iterate through sections and parameters in config.ini
 for section in config.sections():
     print(f"Section: {colored(section, 'light_yellow')}")
     for key, value in config[section].items():
@@ -43,7 +42,7 @@ for section in config.sections():
             if new_value.strip():
                 config[section][key] = new_value
 
-# Записываем обновленные значения в config.ini с ключами в верхнем регистре
+# Write the updated values to config.ini with keys in uppercase
 with open('config.ini', 'w') as configfile:
     config.write(configfile)
 
