@@ -35,3 +35,5 @@ Option 2: Launch the `main.py` script.
 `frame_rate` - Number of frames per second in the recorded video
 
 `camera_index` - Camera number in the system; default is 0 and depends on the number of connected cameras
+
+`windows_visible` controls whether to display a window with a view from the camera. The default value is 1, which is used to set up the camera's position or view the image coverage.
