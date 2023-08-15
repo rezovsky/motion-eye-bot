@@ -65,7 +65,7 @@ async def main():
         seconds_next_photo = int(config['BotSettings']['time_to_next_photo'])
         seconds_to_send_videos = int(config['BotSettings']['time_to_send_videos'])
         frame_rate = int(config['MotionDetectionSettings']['frame_rate'])
-        windows_wisible = bool(config['MotionDetectionSettings']['windows_wisible'])
+        windows_visible = bool(config['MotionDetectionSettings']['vindows_wisible'])
 
         while True:
             ret, frame = cap.read()
@@ -103,7 +103,7 @@ async def main():
                     out.release()
                     await send_motion_video(session)
 
-            if windows_wisible:
+            if windows_visible:
                 cv2.imshow('Motion Detection', result_frame)
 
             if cv2.waitKey(30) & 0xFF == 27:
