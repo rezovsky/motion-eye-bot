@@ -12,7 +12,7 @@ def colored_check(text, color):
     supports_color = sys.stdout.isatty()
     print(supports_color)
     if supports_color:
-        return colored(f' {text.upper()} ', color)
+        return colored(f' {text} ', color)
     else:
         return f' {text.upper()} '
 
@@ -48,7 +48,7 @@ for section in config.sections():
             else:
                 config[section][key] = camera_choice
         else:
-            new_value = input(f"Enter new value for {colored_check(key, 'blue')} (current: {colored_check(value, 'green')}, press Enter to keep unchanged): ")
+            new_value = input(f"Enter new value for {colored_check(key.upper(), 'blue')} (current: {colored_check(value, 'green')}, press Enter to keep unchanged): ")
             if new_value.strip():
                 config[section][key] = new_value
 
