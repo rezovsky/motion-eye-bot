@@ -61,9 +61,9 @@ async def main():
         detect_time = time.time()
         not_detect_time = time.time()
 
-        second_first_photo = int(config['BotSettings']['second_first_photo'])
-        seconds_next_photo = int(config['BotSettings']['seconds_next_photo'])
-        seconds_to_send_videos = int(config['BotSettings']['seconds_to_send_videos'])
+        second_first_photo = int(config['BotSettings']['time_to_first_photo'])
+        seconds_next_photo = int(config['BotSettings']['time_to_next_photo'])
+        seconds_to_send_videos = int(config['BotSettings']['time_to_send_videos'])
         frame_rate = int(config['MotionDetectionSettings']['frame_rate'])
 
         while True:
