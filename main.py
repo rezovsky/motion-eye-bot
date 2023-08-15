@@ -25,7 +25,6 @@ def motion_detection(frame, motion_detector, threshold_area):
         area = cv2.contourArea(contour)
 
         if area > threshold_area:
-            print(area)
             x, y, w, h = cv2.boundingRect(contour)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Рисуем рамку вокруг объекта
             motion_detected = True

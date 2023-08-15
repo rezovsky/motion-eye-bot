@@ -1,1 +1,1 @@
-python -m venv venv && .\venv\Scripts\activate && pip install -r .\requarement.txt
+python -m venv venv && .\venv\Scripts\activate && pip install -r .\requarements.txt

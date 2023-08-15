@@ -1,11 +1,12 @@
 import cv2
 import configparser
-
+from termcolor import colored
 from pygrabber.dshow_graph import FilterGraph
 
 # Чтение настроек из конфигурационного файла
 config = configparser.ConfigParser()
 config.read('config.ini')
+
 
 # Вывод списка доступных камер
 def get_connected_cameras():
@@ -29,13 +30,13 @@ for section in config.sections():
                 print(f"{index}: {name}")
 
             camera_choice = input(
-                f"Enter the index of the camera you want to use (current: {value}, press Enter to keep unchanged): ")
+                f"Enter the index of the camera you want to use (current: {colored(value, 'green')}, press Enter to keep unchanged): ")
             if camera_choice.strip() == '':
                 config[section][key] = value
             else:
                 config[section][key] = camera_choice
         else:
-            new_value = input(f"Enter new value for {key} (current: {value}, press Enter to keep unchanged): ")
+            new_value = input(f"Enter new value for {key} (current: {colored(value, 'green')}, press Enter to keep unchanged): ")
             if new_value.strip():
                 config[section][key] = new_value
 
