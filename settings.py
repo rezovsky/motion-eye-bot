@@ -14,7 +14,7 @@ def colored_check(text, color):
     if supports_color:
         return colored(text, color)
     else:
-        return text
+        return f' {text.upper()} '
 
 # Function to get a list of connected cameras
 def get_connected_cameras():
