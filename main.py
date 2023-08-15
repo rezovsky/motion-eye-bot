@@ -65,7 +65,7 @@ async def main():
         seconds_next_photo = int(config['BotSettings']['time_to_next_photo'])
         seconds_to_send_videos = int(config['BotSettings']['time_to_send_videos'])
         frame_rate = int(config['MotionDetectionSettings']['frame_rate'])
-        windows_visible = bool(config['MotionDetectionSettings']['vindows_wisible'])
+        windows_visible = bool(config['MotionDetectionSettings']['windows_visible'])
 
         while True:
             ret, frame = cap.read()
