@@ -10,6 +10,7 @@ def colored_check(text, color):
     import sys
     from termcolor import colored  # Import termcolor for colored console output
     supports_color = sys.stdout.isatty()
+    print(supports_color)
     if supports_color:
         return colored(text, color)
     else:
